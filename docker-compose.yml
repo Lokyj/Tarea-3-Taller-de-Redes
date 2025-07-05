@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  srs-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: srs-server
+    networks:
+      - rtmp-net
+    ports:
+      - "1935:1935"   # RTMP
+      - "1985:1985"   # HTTP monitor
+    command: ["/usr/local/srs/objs/srs", "-c", "/usr/local/srs/conf/srs.conf"]
+
+  simple-client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: simple-client
+    networks:
+      - rtmp-net
+    volumes:
+      - ./captures:/captures
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    tty: true
+    stdin_open: true
+
+  rtmp-fuzzer:
+    build:
+      context: ./fuzzer
+      dockerfile: Dockerfile
+    container_name: rtmp-fuzzer
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    
+    network_mode: "service:simple-client"
+    volumes:
+      - ./fuzzer:/app
+      - ./captures:/captures
+    environment:
+      - RTMP_SERVER=srs-server
+      - RTMP_PORT=1935
+      - INTERFACE=eth0
+    depends_on:
+      - srs-server
+      - simple-client
+    entrypoint: ["python3", "/app/fuzz_rtmp.py"]
+
+networks:
+  rtmp-net:
+    driver: bridge
