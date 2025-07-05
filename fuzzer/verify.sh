@@ -1,5 +1,4 @@
 #!/bin/bash
-# verify.sh - Versión mejorada
 
 echo "=== Diagnóstico de Red ==="
 echo "1. Interfaz eth0:"

@@ -111,18 +111,6 @@ def mod_field2(pkt):
 
     send(p, iface=IFACE)
 
-def mod_field3(pkt):
-    """Mod 3: cambiar nombre del stream"""
-    sport = pkt[TCP].sport
-    sport = pkt[TCP].sport; seq = pkt[TCP].seq
-    print(f"[FUZZER][MOD3] sport={sport}, seq={seq} → stream→evilstr")
-    print("[FUZZER] Cambiando nombre del stream")
-    p = pkt.copy()
-    p[Raw].load = p[Raw].load.replace(b'/live/stream', b'/live/evilstr')
-    del p[IP].chksum
-    del p[TCP].chksum
-
-    send(p, iface=IFACE)
 
 def mod_body_size(pkt):
    
